@@ -1,0 +1,7 @@
+Client/*.pro
+Client/*.user
+Client/*.ui
+
+Server/*.pro
+Server/*.user
+Server/*.ui
