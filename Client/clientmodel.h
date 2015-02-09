@@ -20,8 +20,8 @@ public slots:
     void Read();
     void Write(const QString & str);
 
-
 signals:
+    void DataReceived(const QString & message);
 
 private:
     quint16 m_nextBlockSize;

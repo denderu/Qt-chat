@@ -22,6 +22,7 @@ void ServerModel::Start(QHostAddress ip, qint32 port)
        this->close();
        return;
     }
+
     if(!this->listen(ip, port))
     {
        QMessageBox::critical(0, "Server Error", "Start failed. " + this->errorString());
@@ -43,15 +44,36 @@ void ServerModel::NewConnection()
     m_firstMessage = true;
 
     connect(sock, SIGNAL(readyRead()), this, SLOT(Read()));
+    connect(sock, SIGNAL(disconnected()), this, SLOT(UserDisconnected()));
+}
+
+void ServerModel::UserDisconnected()
+{
+    QString message;
+    VectorIterator it;
+    QTcpSocket* socket = qobject_cast<QTcpSocket *>(sender());
+
+    message = "*** " + m_clients[socket] + " has left the chat***";
+    emit DataReceived(message);
+
+    it = std::find(m_users.begin(), m_users.end(), m_clients[socket]);
+    m_users.erase(it);
+
+    UpdateUsersList();
+
+    m_clients.erase(socket);
+    socket->deleteLater();
 }
 
 void ServerModel::Read()
 {
     QTime time;
-    QString str;
-    QString message;
+    QString str, message, nicknames;
+    MapIterator itMap;
+    VectorIterator itVec;
     QTcpSocket* socket = qobject_cast<QTcpSocket *>(sender());
     QDataStream readStream(socket);
+
     while(true)
     {
         if(!m_nextBlockSize)
@@ -62,25 +84,30 @@ void ServerModel::Read()
         }
 
         if(socket->bytesAvailable() < m_nextBlockSize)
-        {
             break;
-        }
 
         readStream >> time >> str;
 
         if(m_firstMessage)
         {
             m_firstMessage = false;
-            emit NickNameReceived(str);
 
-            message = "***[" + time.toString() + "] " + str + " enter the chat***";
+            m_clients[socket] = str;
+            m_users.push_back(str);
+
+            UpdateUsersList();
+
+            message = "*** " + str + " enter the chat***";
             emit DataReceived(message);
             return;
         }
 
         message = "[" + time.toString() + "] " + str;
-        emit DataReceived(message);
 
+        for (itMap= m_clients.begin(); itMap != m_clients.end(); itMap++)
+            Write(itMap->first, message);
+
+        emit DataReceived(message);
         m_nextBlockSize = 0;
     }
 }
@@ -93,6 +120,16 @@ void ServerModel::Write(QTcpSocket * socket, const QString & str)
 
     sendStream.device()->seek(0);
     sendStream << quint16(block.size() - sizeof(quint16));
+
     socket->write(block);
+}
+
+void ServerModel::UpdateUsersList()
+{
+    QString nicknames;
+    VectorIterator it;
+    for (it= m_users.begin(); it != m_users.end(); it++)
+        nicknames += *it + "\n";
+    emit UpdateUsers(nicknames);
 }
 

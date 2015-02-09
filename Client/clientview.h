@@ -24,13 +24,14 @@ public slots:
     void OnConnectButton();
     void OnDisconnectButton();
     void Send();
-    void Receive();
     void Connected();
     void Disconnected();
+    void UpdateChat(const QString & msg);
 
 private:
     Ui::ClientView *ui;
     ClientModel *client;
+    QString m_chat;
 };
 
 #endif // CLIENTVIEW_H

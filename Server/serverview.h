@@ -24,13 +24,12 @@ public slots:
     void OnStartButton();
     void OnStopButton();
     void UpdateChat(const QString & msg);
-    void UpdateUsers(const QString & nickname);
+    void UpdateUsersList(QString usersList);
 
 private:
     Ui::ServerView *ui;
     ServerModel *server;
     QString m_chat;
-    QString m_users;
 };
 
 #endif // SERVERVIEW_H

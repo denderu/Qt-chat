@@ -11,10 +11,12 @@ ServerView::ServerView(QWidget *parent) :
     ui->setupUi(this);
     server = new ServerModel();
 
+    ui->stopButton->setEnabled(false);
+
     connect(ui->startButton, SIGNAL(clicked()), this, SLOT(OnStartButton()));
     connect(ui->stopButton, SIGNAL(clicked()), this, SLOT(OnStopButton()));
     connect(server, SIGNAL(DataReceived(QString)), this, SLOT(UpdateChat(QString)));
-    connect(server, SIGNAL(NickNameReceived(QString)), this, SLOT(UpdateUsers(QString)));
+    connect(server, SIGNAL(UpdateUsers(QString)), this, SLOT(UpdateUsersList(QString)));
 }
 
 ServerView::~ServerView()
@@ -29,9 +31,9 @@ void ServerView::OnStartButton()
     ui->stopButton->setEnabled(true);
     ui->ipBox->setEnabled(false);
     ui->portBox->setEnabled(false);
-    QHostAddress ip = QHostAddress(ui->ipBox->text());
-    qint32 port = ui->portBox->text().toInt();
-    server->Start(ip, port);
+    //QHostAddress ip = QHostAddress(ui->ipBox->text());
+    //qint32 port = ui->portBox->text().toInt();
+    server->Start(QHostAddress::Any, 1111);
 }
 
 void ServerView::OnStopButton()
@@ -49,10 +51,9 @@ void ServerView::UpdateChat(const QString & msg)
     ui->chatLabel->setText(m_chat);
 }
 
-void ServerView::UpdateUsers(const QString & nickname)
+void ServerView::UpdateUsersList(QString usersList)
 {
-    m_users += nickname + "\n";
-    ui->usersLabel->setText(m_users);
+    ui->usersLabel->setText(usersList);
 }
 
 

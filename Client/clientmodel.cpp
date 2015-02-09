@@ -41,9 +41,13 @@ void ClientModel::Read()
         }
 
         if(this->bytesAvailable() < m_nextBlockSize)
+        {
             break;
+        }
 
         readStream >> time >> str;
+
+        emit DataReceived(str);
         m_nextBlockSize = 0;
     }
 }

@@ -18,6 +18,7 @@ ClientView::ClientView(QWidget *parent) :
     connect(ui->messageBox, SIGNAL(returnPressed()), this, SLOT(Send()));
     connect(client, SIGNAL(connected()), this, SLOT(Connected()));
     connect(client, SIGNAL(disconnected()), this, SLOT(Disconnected()));
+    connect(client, SIGNAL(DataReceived(QString)), this, SLOT(UpdateChat(QString)));
 }
 
 ClientView::~ClientView()
@@ -40,10 +41,10 @@ void ClientView::OnConnectButton()
         return;
     }
 
-    QString ip = ui->ipBox->text();
-    QString port = ui->portBox->text();
+    //QString ip = ui->ipBox->text();
+    //QString port = ui->portBox->text();
 
-    client->Connect(ip, port);
+    client->Connect("127.0.0.1", "1111");
 }
 
 void ClientView::OnDisconnectButton()
@@ -59,11 +60,6 @@ void ClientView::Send()
     QString str = ui->usernameBox->text() + ": " + ui->messageBox->text();
     client->Write(str);
     ui->messageBox->clear();
-}
-
-void ClientView::Receive()
-{
-
 }
 
 void ClientView::Connected()
@@ -88,5 +84,11 @@ void ClientView::Disconnected()
     ui->connectButton->setEnabled(true);
     ui->disconnectButton->setEnabled(false);
     ui->sendButton->setEnabled(false);
+}
+
+void ClientView::UpdateChat(const QString & msg)
+{
+    m_chat += msg + "\n";
+    ui->chatBox->setText(m_chat);
 }
 
